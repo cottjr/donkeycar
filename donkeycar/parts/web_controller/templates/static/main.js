@@ -116,6 +116,10 @@ var driveHandler = new function() {
           joystickLoopRunning = false;
           state.controlMode = "tilt";
           console.log('tilt mode')
+        } else if (this.value == 'spi-slave'){
+          joystickLoopRunning = false;
+          state.controlMode = "spi-slave";
+          console.log('spi-slave mode')
         } else if (this.value == 'gamepad' && hasGamepad) {
           joystickLoopRunning = false;
           state.controlMode = "gamepad";
@@ -244,16 +248,28 @@ var driveHandler = new function() {
 
       if (state.controlMode == "joystick") {
         $('#joystick-column').show();
-        $('#tilt-toggle').removeClass("active");
         $('#joystick-toggle').addClass("active");
-        $('#joystick').attr("checked", "checked")
-        $('#tilt').removeAttr("checked")
+        $('#tilt-toggle').removeClass("active");
+        $('#spi-slave-toggle').removeClass("active");
+        $('#joystick').attr("checked", "checked");
+        $('#tilt').removeAttr("checked");
+        $('#spi-slave').removeAttr("checked");
       } else if (state.controlMode == "tilt") {
         $('#joystick-column').hide();
         $('#joystick-toggle').removeClass("active");
         $('#tilt-toggle').addClass("active");
+        $('#spi-slave-toggle').removeClass("active");
         $('#joystick').removeAttr("checked");
         $('#tilt').attr("checked", "checked");
+        $('#spi-slave').removeAttr("checked");
+      } else if (state.controlMode == "spi-slave") {
+        $('#joystick-column').hide();
+        $('#joystick-toggle').removeClass("active");
+        $('#tilt-toggle').removeClass("active");
+        $('#spi-slave-toggle').addClass("active");
+        $('#joystick').removeAttr("checked");
+        $('#tilt').removeAttr("checked");
+        $('#spi-slave').attr("checked", "checked");        
       }
 
       //drawLine(state.tele.user.angle, state.tele.user.throttle)
