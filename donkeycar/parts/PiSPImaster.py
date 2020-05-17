@@ -238,9 +238,92 @@ class piSPImaster:
     # print()
 
 
-# Reference Code Snippit -> provides a simple demo/verification
+# Donkey Car style Part / wrapper for the reference piSPImaster class
+class SPImasterInterface():
+    def __init__(self):
+        self.SPImaster = piSPImaster()
+        # initialize SPI master send buffer values
+        self.sendNextCommand = ord('c')
+        self.sendNextTurnVelocity = 0
+        self.sendNextForwardThrottle = 0
+        self.sendNextSidewaysThrottle = 0
+        self.sendNextParam1 = 0
+        self.sendNextParam2 = 0
+        self.sendNextParam3 = 0
+        print(
+            'reset the mega error counters before entering the while loop....\n')
+        print('SPI exchange result: ', self.SPImaster.doSPItransfer(
+            ord('R'), 0, 0, 0, 0, 0, 0, self.SPImaster.errorCountSPIrx))
+        # Pause so we can see results
+        time.sleep(.9)
+        print('------Completed SPImaster init-------------------')
 
-class SPIloopbackTest:
+    def run(self):
+        self.SPImaster.doSPItransfer(
+            self.sendNextCommand, self.sendNextTurnVelocity, self.sendNextForwardThrottle, self.sendNextSidewaysThrottle,
+            self.sendNextParam1, self.sendNextParam2, self.sendNextParam3, self.SPImaster.errorCountSPIrx)
+        # self.mode, self.recording
+        return self.SPImaster.receivedTurnVelocity/100, self.SPImaster.receivedForwardThrottle/100,
+
+# separate class to fetch the most recently received values from SPI
+class getRxBufferValuesFromSPI:
+    def __init__(self, SPIinterfaceInstance):
+        self.SPIinterfaceInstance = SPIinterfaceInstance
+
+    def getCommand(self):
+        # return as a character string
+        return self.SPIinterfaceInstance.SPImaster.receivedCommand
+
+    def getTurnVelocity(self):
+        # maps SPI interface definition range [-100, +100] to DonkeyCar range [-1, +1]
+        return self.SPIinterfaceInstance.SPImaster.receivedTurnVelocity/100
+
+    def getForwardThrottle(self):
+        # maps SPI interface definition range [-100, +100] to DonkeyCar range [-1, +1]
+        return self.SPIinterfaceInstance.SPImaster.receivedForwardThrottle/100
+
+# separate class to set new values to be transferred to SPI at the next opportunity
+class setTxBufferValuesForSPI:
+    def __init__(self, SPIinterfaceInstance):
+        self.SPIinterfaceInstance = SPIinterfaceInstance
+
+    def setCommand(self, command):
+        # maps DonkeyCar character / string type to SPI interface byte compatible number definition
+        self.SPIinterfaceInstance.sendNextCommand = ord(command)
+
+    def setTurnVelocity(self, TurnVelocity):
+        # maps DonkeyCar range [-1, +1] to SPI interface definition range [-100, +100]
+        self.SPIinterfaceInstance.sendNextTurnVelocity = int(
+            100 * TurnVelocity)
+
+    def setForwardThrottle(self, ForwardThrottle):
+        # maps DonkeyCar range [-1, +1] to SPI interface definition range [-100, +100]
+        self.SPIinterfaceInstance.sendNextForwardThrottle = int(
+            100 * ForwardThrottle)
+
+
+# Verifies PiSPImaster getter and setter functions by fetching the most recent values received from the SPIslave,
+#  and setting them to be sent back to SPIslave on the next cycle
+# Second Loopback Test version, implemented as a Donkey Car style part
+class SPIloopbackTestV2:
+    def __init__(self, SPIrxBufferInstance, SPItxBufferInstance):
+        self.SPIrxBufferInstance = SPIrxBufferInstance
+        self.SPItxBufferInstance = SPItxBufferInstance
+
+    def run(self):
+        self.SPItxBufferInstance.setCommand(
+            self.SPIrxBufferInstance.getCommand())
+        self.SPItxBufferInstance.setTurnVelocity(
+            self.SPIrxBufferInstance.getTurnVelocity())
+        self.SPItxBufferInstance.setForwardThrottle(
+            self.SPIrxBufferInstance.getForwardThrottle())
+
+
+
+# Only verifies basic pattern of creating functioning a Donkey part that does NOT otherwise interact with the rest of the Donkey
+
+# Initial / very basic Loopback Test
+class SPIloopbackTestV1:
     def __init__(self):
         self.SPImaster = piSPImaster()
         print(
