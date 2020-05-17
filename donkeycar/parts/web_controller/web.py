@@ -32,7 +32,7 @@ class RemoteWebServer():
     A controller that repeatedly polls a remote webserver and expects
     the response to be angle, throttle and drive mode. 
     '''
-    
+
     def __init__(self, remote_url, connection_timeout=.25):
 
         self.control_url = remote_url
@@ -65,7 +65,7 @@ class RemoteWebServer():
         Posts current car sensor data to webserver and returns
         angle and throttle recommendations. 
         '''
-        
+
         data = {}
         response = None
         while response is None:
@@ -82,7 +82,7 @@ class RemoteWebServer():
             except requests.ConnectionError as err:
                 # try to reconnect every 3 seconds
                 print("\n Vehicle could not connect to server. Make sure you've " +
-                    "started your server and you're referencing the right port.")
+                      "started your server and you're referencing the right port.")
                 time.sleep(3)
 
         data = json.loads(response.text)
@@ -95,17 +95,19 @@ class RemoteWebServer():
 
     def shutdown(self):
         pass
-    
-    
+
+
 class LocalWebController(tornado.web.Application):
 
-    def __init__(self, port=8887, mode='user'):
+    def __init__(self, SPIrxBuffer, port=8887, mode='user'):
         ''' 
         Create and publish variables needed on many of 
         the web handlers.
         '''
 
         print('Starting Donkey Server...', end='')
+
+        self.SPIrxBuffer = SPIrxBuffer
 
         this_dir = os.path.dirname(os.path.realpath(__file__))
         self.static_file_path = os.path.join(this_dir, 'templates', 'static')
@@ -136,11 +138,19 @@ class LocalWebController(tornado.web.Application):
 
     def run_threaded(self, img_arr=None):
         self.img_arr = img_arr
-        return self.angle, self.throttle, self.mode, self.recording
-        
+        # # ToDo - figure out how to pass state from web page into this function
+        # if (state.controlMode == "spi-slave"):
+        return self.SPIrxBuffer.getTurnVelocity(), self.SPIrxBuffer.getForwardThrottle(), self.mode, self.recording
+        # else:
+        #     return self.angle, self.throttle, self.mode, self.recording
+
     def run(self, img_arr=None):
         self.img_arr = img_arr
-        return self.angle, self.throttle, self.mode, self.recording
+        # # ToDo - figure out how to pass state from web page into this function
+        # if (state.controlMode == "spi-slave"):
+        return self.SPIrxBuffer.getTurnVelocity(), self.SPIrxBuffer.getForwardThrottle(), self.mode, self.recording
+        # else:
+        #     return self.angle, self.throttle, self.mode, self.recording
 
     def shutdown(self):
         pass
@@ -244,6 +254,3 @@ class WebFpv(Application):
 
     def shutdown(self):
         pass
-
-
-
