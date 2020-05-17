@@ -266,6 +266,8 @@ class SPImasterInterface():
         return self.SPImaster.receivedTurnVelocity/100, self.SPImaster.receivedForwardThrottle/100,
 
 # separate class to fetch the most recently received values from SPI
+
+
 class getRxBufferValuesFromSPI:
     def __init__(self, SPIinterfaceInstance):
         self.SPIinterfaceInstance = SPIinterfaceInstance
@@ -283,6 +285,8 @@ class getRxBufferValuesFromSPI:
         return self.SPIinterfaceInstance.SPImaster.receivedForwardThrottle/100
 
 # separate class to set new values to be transferred to SPI at the next opportunity
+
+
 class setTxBufferValuesForSPI:
     def __init__(self, SPIinterfaceInstance):
         self.SPIinterfaceInstance = SPIinterfaceInstance
@@ -302,6 +306,15 @@ class setTxBufferValuesForSPI:
             100 * ForwardThrottle)
 
 
+class SPIdriver2wheelDifferential:
+    def __init__(self, SPItxBufferInstance):
+        self.SPItxBufferInstance = SPItxBufferInstance
+
+    def run(self, TurnVelocity, ForwardThrottle):
+        self.SPItxBufferInstance.setTurnVelocity(TurnVelocity)
+        self.SPItxBufferInstance.setForwardThrottle(ForwardThrottle)
+
+
 # Verifies PiSPImaster getter and setter functions by fetching the most recent values received from the SPIslave,
 #  and setting them to be sent back to SPIslave on the next cycle
 # Second Loopback Test version, implemented as a Donkey Car style part
@@ -317,7 +330,6 @@ class SPIloopbackTestV2:
             self.SPIrxBufferInstance.getTurnVelocity())
         self.SPItxBufferInstance.setForwardThrottle(
             self.SPIrxBufferInstance.getForwardThrottle())
-
 
 
 # Only verifies basic pattern of creating functioning a Donkey part that does NOT otherwise interact with the rest of the Donkey
